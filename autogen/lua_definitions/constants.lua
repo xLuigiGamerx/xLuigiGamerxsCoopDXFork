@@ -2933,6 +2933,9 @@ G_TEXRECTFLIP = 0xe5
 --- @type integer
 G_TEXRECT = 0xe4
 
+--- @type integer
+G_VTX_EXT = 0x11
+
 BACKGROUND_OCEAN_SKY       =  0 --- @type SkyBackgroundParams
 BACKGROUND_FLAMING_SKY     =  1 --- @type SkyBackgroundParams
 BACKGROUND_UNDERWATER_CITY =  2 --- @type SkyBackgroundParams
@@ -3607,6 +3610,26 @@ HUD_DISPLAY_DEFAULT               = HUD_DISPLAY_FLAG_LIVES | HUD_DISPLAY_FLAG_CO
 --- | `HUD_DISPLAY_FLAG_EMPHASIZE_POWER`
 --- | `HUD_DISPLAY_NONE`
 --- | `HUD_DISPLAY_DEFAULT`
+
+LE_MODE_AFFECT_ALL_SHADED_AND_COLORED = 0 --- @type LEMode
+LE_MODE_AFFECT_ALL_SHADED             = 1 --- @type LEMode
+LE_MODE_AFFECT_ONLY_GEOMETRY_MODE     = 2 --- @type LEMode
+
+--- @alias LEMode
+--- | `LE_MODE_AFFECT_ALL_SHADED_AND_COLORED`
+--- | `LE_MODE_AFFECT_ALL_SHADED`
+--- | `LE_MODE_AFFECT_ONLY_GEOMETRY_MODE`
+
+LE_TONE_MAPPING_TOTAL_WEIGHTED = 0 --- @type LEToneMapping
+LE_TONE_MAPPING_WEIGHTED       = 1 --- @type LEToneMapping
+LE_TONE_MAPPING_CLAMP          = 2 --- @type LEToneMapping
+LE_TONE_MAPPING_REINHARD       = 3 --- @type LEToneMapping
+
+--- @alias LEToneMapping
+--- | `LE_TONE_MAPPING_TOTAL_WEIGHTED`
+--- | `LE_TONE_MAPPING_WEIGHTED`
+--- | `LE_TONE_MAPPING_CLAMP`
+--- | `LE_TONE_MAPPING_REINHARD`
 
 MARIO_ANIM_SLOW_LEDGE_GRAB                      =   0 --- @type MarioAnimID
 MARIO_ANIM_FALL_OVER_BACKWARDS                  =   1 --- @type MarioAnimID
@@ -8023,7 +8046,8 @@ HOOK_ON_INSTANT_WARP                        = 55 --- @type LuaHookedEventType
 HOOK_MARIO_OVERRIDE_FLOOR_CLASS             = 56 --- @type LuaHookedEventType
 HOOK_ON_ADD_SURFACE                         = 57 --- @type LuaHookedEventType
 HOOK_ON_CLEAR_AREAS                         = 58 --- @type LuaHookedEventType
-HOOK_MAX                                    = 59 --- @type LuaHookedEventType
+HOOK_ON_PACKET_BYTESTRING_RECEIVE           = 59 --- @type LuaHookedEventType
+HOOK_MAX                                    = 60 --- @type LuaHookedEventType
 
 --- @alias LuaHookedEventType
 --- | `HOOK_UPDATE`
@@ -8085,6 +8109,7 @@ HOOK_MAX                                    = 59 --- @type LuaHookedEventType
 --- | `HOOK_MARIO_OVERRIDE_FLOOR_CLASS`
 --- | `HOOK_ON_ADD_SURFACE`
 --- | `HOOK_ON_CLEAR_AREAS`
+--- | `HOOK_ON_PACKET_BYTESTRING_RECEIVE`
 --- | `HOOK_MAX`
 
 HUD_DISPLAY_LIVES         = 0 --- @type HudDisplayValue

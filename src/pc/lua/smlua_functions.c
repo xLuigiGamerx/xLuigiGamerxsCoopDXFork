@@ -19,7 +19,6 @@
 #include "utils/smlua_anim_utils.h"
 #include "utils/smlua_collision_utils.h"
 #include "game/hardcoded.h"
-#include "gfx_symbols.h"
 #include "include/macros.h"
 
 bool smlua_functions_valid_param_count(lua_State* L, int expected) {
@@ -45,7 +44,7 @@ bool smlua_functions_valid_param_range(lua_State* L, int min, int max) {
 ///////////
 
 int smlua_func_table_copy(lua_State *L) {
-    LUA_STACK_CHECK_BEGIN_NUM(1);
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
 
     if (!smlua_functions_valid_param_count(L, 1)) { return 0; }
 
@@ -71,7 +70,7 @@ int smlua_func_table_copy(lua_State *L) {
         lua_settable(L, 2);
     }
 
-    LUA_STACK_CHECK_END();
+    LUA_STACK_CHECK_END(L);
     return 1;
 }
 
@@ -129,7 +128,7 @@ static void table_deepcopy_table(lua_State *L, int idxTable, int idxCache) {
 }
 
 int smlua_func_table_deepcopy(lua_State *L) {
-    LUA_STACK_CHECK_BEGIN_NUM(1);
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
 
     if (!smlua_functions_valid_param_count(L, 1)) { return 0; }
 
@@ -146,7 +145,7 @@ int smlua_func_table_deepcopy(lua_State *L) {
 
     lua_remove(L, idxCache);
 
-    LUA_STACK_CHECK_END();
+    LUA_STACK_CHECK_END(L);
     return 1;
 }
 
@@ -292,6 +291,18 @@ int smlua_func_network_send(lua_State* L) {
 int smlua_func_network_send_to(lua_State* L) {
     if (!smlua_functions_valid_param_count(L, 3)) { return 0; }
     network_send_lua_custom(false);
+    return 1;
+}
+
+int smlua_func_network_send_bytestring(lua_State* L) {
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+    network_send_lua_custom_bytestring(true);
+    return 1;
+}
+
+int smlua_func_network_send_bytestring_to(lua_State* L) {
+    if (!smlua_functions_valid_param_count(L, 3)) { return 0; }
+    network_send_lua_custom_bytestring(false);
     return 1;
 }
 
@@ -476,6 +487,7 @@ int smlua_func_texture_override_reset(lua_State* L) {
 struct LuaLevelScriptParse {
     int reference;
     struct Mod* mod;
+    struct ModFile* modFile;
 };
 
 struct LuaLevelScriptParse sLevelScriptParse = { 0 };
@@ -636,7 +648,7 @@ s32 smlua_func_level_script_parse_callback(u8 type, void *cmd) {
     }
 
     // call the callback
-    if (0 != smlua_call_hook(L, 5, 0, 0, preprocess->mod)) {
+    if (0 != smlua_call_hook(L, 5, 0, 0, preprocess->mod, preprocess->modFile)) {
         LOG_LUA("Failed to call the callback behaviors: %u", type);
         return 0;
     }
@@ -665,6 +677,7 @@ void smlua_func_level_script_parse(lua_State* L) {
 
     preprocess->reference = ref;
     preprocess->mod = gLuaActiveMod;
+    preprocess->modFile = gLuaActiveModFile;
 
     void *script = dynos_level_get_script(levelNum);
     if (script == NULL) {
@@ -1019,6 +1032,8 @@ void smlua_bind_functions(void) {
     smlua_bind_function(L, "reset_level", smlua_func_reset_level);
     smlua_bind_function(L, "network_send", smlua_func_network_send);
     smlua_bind_function(L, "network_send_to", smlua_func_network_send_to);
+    smlua_bind_function(L, "network_send_bytestring", smlua_func_network_send_bytestring);
+    smlua_bind_function(L, "network_send_bytestring_to", smlua_func_network_send_bytestring_to);
     smlua_bind_function(L, "set_exclamation_box_contents", smlua_func_set_exclamation_box_contents);
     smlua_bind_function(L, "get_exclamation_box_contents", smlua_func_get_exclamation_box_contents);
     smlua_bind_function(L, "get_texture_info", smlua_func_get_texture_info);

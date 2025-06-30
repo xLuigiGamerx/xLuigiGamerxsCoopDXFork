@@ -2,6 +2,7 @@
 
 #include "area.h"
 #include "engine/math_util.h"
+#include "engine/lighting_engine.h"
 #include "game_init.h"
 #include "gfx_dimensions.h"
 #include "main.h"
@@ -403,9 +404,12 @@ static void geo_process_master_list_sub(struct GraphNodeMasterList *node) {
                     gMtxTbl[gMtxTblSize].displayList = currList->displayList;
                     gMtxTbl[gMtxTblSize++].usingCamSpace = currList->usingCamSpace;
                 }
+
                 gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(currList->transformPrev),
                           G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
+
                 gSPDisplayList(gDisplayListHead++, currList->displayList);
+
                 currList = currList->next;
             }
         }
@@ -607,6 +611,16 @@ static void geo_process_camera(struct GraphNodeCamera *node) {
     // save the camera matrix
     if (gCamera) {
         mtxf_copy(gCamera->mtx, gMatStack[gMatStackIndex]);
+    }
+
+    // compute inverse matrix for lighting engine
+    if (le_is_enabled()) {
+        Mat4 invCameraMatrix;
+        if (mtxf_inverse_non_affine(invCameraMatrix, gCamera->mtx)) {
+            Mtx *invMtx = alloc_display_list(sizeof(Mtx));
+            mtxf_to_mtx(invMtx, invCameraMatrix);
+            gSPMatrix(gDisplayListHead++, invMtx, G_MTX_INVERSE_CAMERA_EXT);
+        }
     }
 
     if (node->fnNode.node.children != 0) {
@@ -1233,8 +1247,7 @@ static void geo_sanitize_object_gfx(void) {
 
 static struct MarioBodyState *get_mario_body_state_from_mario_object(struct Object *marioObj) {
     struct MarioState *m = get_mario_state_from_object(marioObj);
-    if (m) { return m->marioBodyState; }
-    return NULL;
+    return m ? m->marioBodyState : NULL;
 }
 
 /**
@@ -1385,11 +1398,9 @@ static void geo_process_object(struct Object *node) {
             gMatStackPrevFixed[gMatStackIndex] = mtxPrev;
 
             if (node->header.gfx.sharedChild != NULL) {
-                if (node->header.gfx.node.flags & GRAPH_RENDER_PLAYER) {
-                    gCurMarioBodyState = get_mario_body_state_from_mario_object(node);
-                    if (gCurMarioBodyState) {
-                        gCurMarioBodyState->currAnimPart = MARIO_ANIM_PART_NONE;
-                    }
+                gCurMarioBodyState = get_mario_body_state_from_mario_object(node);
+                if (gCurMarioBodyState) {
+                    gCurMarioBodyState->currAnimPart = MARIO_ANIM_PART_NONE;
                 }
                 gCurGraphNodeObject = (struct GraphNodeObject *) node;
                 node->header.gfx.sharedChild->parent = &node->header.gfx.node;
